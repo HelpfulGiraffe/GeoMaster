@@ -156,50 +156,33 @@ var topojson = (function() {
 
   .two-player-toggle { display:flex; align-items:center; justify-content:space-between; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin:12px 0; }
   .two-player-toggle span { font-weight:700; font-size:0.95rem; }
-  .toggle-switch { position:relative; width:48px; height:26px; }
-  .toggle-switch input { opacity:0; width:0; height:0; }
-  .toggle-slider { position:absolute; inset:0; background:#ccc; border-radius:26px; cursor:pointer; transition:.3s; }
   .toggle-slider:before { content:""; position:absolute; width:20px; height:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
-  .toggle-switch input:checked + .toggle-slider { background:var(--accent); }
-  .toggle-switch input:checked + .toggle-slider:before { transform:translateX(22px); }
-  .player-name-inputs { display:none; gap:10px; margin-bottom:8px; }
-  .player-name-inputs.visible { display:flex; }
-  .player-name-inputs input { flex:1; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--card); color:var(--text); font-size:0.95rem; font-family:inherit; outline:none; }
-  .player-name-inputs input:focus { border-color:var(--accent); }
-  .player-banner { display:none; align-items:center; justify-content:space-between; padding:8px 14px; border-radius:10px; margin-bottom:8px; font-weight:800; font-size:1rem; }
-  .player-banner.p1 { background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white; }
-  .player-banner.p2 { background:linear-gradient(135deg,#f59e0b,#b45309); color:white; }
-  .player-banner.active { display:flex; }
-  .player-score-badge { background:rgba(255,255,255,0.25); border-radius:8px; padding:2px 10px; font-size:0.9rem; }
-  .transition-overlay { position:fixed; inset:0; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; opacity:0; pointer-events:none; transition:opacity 0.3s; }
-  .transition-overlay.show { opacity:1; pointer-events:all; }
-  .transition-overlay.p1-turn { background:linear-gradient(135deg,#3b82f6,#1d4ed8); }
-  .transition-overlay.p2-turn { background:linear-gradient(135deg,#f59e0b,#b45309); }
-  .transition-title { font-family:"Bebas Neue",sans-serif; font-size:3rem; color:white; letter-spacing:2px; }
-  .transition-sub { color:rgba(255,255,255,0.85); font-size:1.1rem; font-weight:600; }
-  .transition-btn { background:rgba(255,255,255,0.25); color:white; border:2px solid rgba(255,255,255,0.5); padding:14px 36px; border-radius:50px; font-size:1.1rem; font-weight:800; cursor:pointer; font-family:inherit; }
-  .vs-result-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin:10px 0; }
-  .vs-winner-banner { text-align:center; padding:20px; border-radius:16px; margin:12px 0; }
-  .vs-winner-banner.p1-wins { background:linear-gradient(135deg,#3b82f6,#1d4ed8); color:white; }
-  .vs-winner-banner.p2-wins { background:linear-gradient(135deg,#f59e0b,#b45309); color:white; }
-  .vs-winner-banner.draw { background:linear-gradient(135deg,#6b7280,#374151); color:white; }
-  .vs-winner-banner h2 { margin:0 0 4px; font-family:"Bebas Neue",sans-serif; font-size:2rem; letter-spacing:1px; }
-  .vs-winner-banner p { margin:0; opacity:0.9; }
+
+  /* ── Leaderboard ── */
+  .lb-row { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:8px; }
+  .lb-rank { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; width:32px; text-align:center; flex-shrink:0; color:var(--muted); }
+  .lb-rank.gold { color:#f59e0b; }
+  .lb-rank.silver { color:#94a3b8; }
+  .lb-rank.bronze { color:#b45309; }
+  .lb-name { flex:1; font-weight:800; font-size:0.95rem; }
+  .lb-score { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; color:var(--accent); }
+  .lb-meta { font-size:0.75rem; color:var(--muted); }
+  .lb-submit { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-top:12px; }
+  .lb-submit input { width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg); color:var(--text); font-size:0.95rem; font-family:inherit; outline:none; box-sizing:border-box; margin-bottom:10px; }
+  .lb-submit input:focus { border-color:var(--accent); }
+  .lb-empty { text-align:center; padding:40px 20px; color:var(--muted); }
 </style>
 </head>
 <body>
 
 
-<div class="transition-overlay" id="turn-transition">
-  <div class="transition-title" id="tt-title">PLAYER 1</div>
-  <div class="transition-sub" id="tt-sub">Get ready...</div>
-  <button class="transition-btn" id="tt-btn" onclick="dismissTransition()">TAP TO START</button>
-</div>
+
 <nav class="top-nav">
   <div class="nav-brand">🌍 GEO MASTER</div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('flags',this)">🏴 Flags</button>
     <button class="nav-tab" onclick="switchTab('cities',this)">📍 Cities</button>
+    <button class="nav-tab" onclick="switchTab('leaderboard',this)">🏆 Leaderboard</button>
   </div>
 </nav>
 
@@ -225,22 +208,9 @@ var topojson = (function() {
       <button class="pill" onclick="flagSelectRegion(this,'Oceania')">🏝️ Oceania</button>
       <button class="pill" onclick="flagSelectRegion(this,'Middle East')">🕌 Middle East</button>
     </div>
-    <div class="section-label">Mode</div>
-    <div class="two-player-toggle">
-      <span>&#128101; 2-Player Mode</span>
-      <label class="toggle-switch">
-        <input type="checkbox" id="flag-2p-toggle" onchange="toggle2Player('flag')">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-    <div class="player-name-inputs" id="flag-player-names">
-      <input type="text" id="flag-p1-name" placeholder="Player 1 name" maxlength="12">
-      <input type="text" id="flag-p2-name" placeholder="Player 2 name" maxlength="12">
-    </div>
     <button class="btn" onclick="startFlagGame()">Start Game</button>
   </div>
   <div class="screen" id="flag-game">
-    <div class="player-banner p1" id="f-player-banner"><span id="f-player-name">Player 1</span><span class="player-score-badge" id="f-player-score-badge">0 pts</span></div>
     <div class="stats-bar">
       <div class="stat"><span class="stat-label">Score</span><span class="stat-value" id="f-score">0</span></div>
       <div class="stat"><span class="stat-label">Question</span><span class="stat-value" id="f-q">1/20</span></div>
@@ -289,23 +259,10 @@ var topojson = (function() {
       <button class="pill" onclick="citySelectRegion(this,'Americas')">🌎 Americas</button>
       <button class="pill" onclick="citySelectRegion(this,'Oceania')">🏝️ Oceania</button>
     </div>
-    <div class="section-label">Mode</div>
-    <div class="two-player-toggle">
-      <span>&#128101; 2-Player Mode</span>
-      <label class="toggle-switch">
-        <input type="checkbox" id="city-2p-toggle" onchange="toggle2Player('city')">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-    <div class="player-name-inputs" id="city-player-names">
-      <input type="text" id="city-p1-name" placeholder="Player 1 name" maxlength="12">
-      <input type="text" id="city-p2-name" placeholder="Player 2 name" maxlength="12">
-    </div>
     <button class="btn" onclick="startCityGame()">Start Game</button>
   </div>
 
   <div class="screen" id="city-game">
-    <div class="player-banner p1" id="c-player-banner"><span id="c-player-name">Player 1</span><span class="player-score-badge" id="c-player-score-badge">0 pts</span></div>
     <div class="stats-bar">
       <div class="stat"><span class="stat-label">Points</span><span class="stat-value" id="c-score">0</span></div>
       <div class="stat"><span class="stat-label">City</span><span class="stat-value" id="c-q">1/10</span></div>
@@ -336,7 +293,7 @@ var topojson = (function() {
         <button class="cbtn go" onclick="confirmPin()">✓ Confirm</button>
       </div>
       <div class="city-result-bar">
-        <div class="city-result-text waiting" id="c-result-text">Click the map to drop a pin…</div>
+        <div class="city-result-text waiting" id="c-result-text"></div>
         <button class="next-btn" id="c-next-btn" onclick="nextCityQuestion()">Next →</button>
       </div>
     </div>
@@ -353,6 +310,22 @@ var topojson = (function() {
   </div>
 </div>
 
+
+<div class="page" id="page-leaderboard">
+  <div class="screen active" id="lb-screen">
+    <div class="screen-icon">🏆</div>
+    <div class="screen-title">Leaderboard</div>
+    <div style="display:flex;gap:8px;margin:12px 0;">
+      <button class="pill selected" id="lb-tab-flags" onclick="lbSwitchTab('flags')">🏴‍☠️ Flags</button>
+      <button class="pill" id="lb-tab-cities" onclick="lbSwitchTab('cities')">📍 Cities</button>
+    </div>
+    <div id="lb-list" style="width:100%;max-width:480px;margin:0 auto;">
+      <div style="text-align:center;color:var(--muted);padding:40px 0;">Loading scores...</div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:16px;">Scores are shared publicly with all players</p>
+  </div>
+</div>
+
 <script>
 function switchTab(tab, btn) {
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
@@ -360,50 +333,6 @@ function switchTab(tab, btn) {
   document.getElementById('page-'+tab).classList.add('active');
   btn.classList.add('active');
 }
-// ── 2-Player State ──
-var tpGame = null;       // 'flag' | 'city' | null
-var tpCurrent = 0;       // 0 = player 1, 1 = player 2
-var tpNames = ['Player 1', 'Player 2'];
-var tpScores = [0, 0];
-var tpGameData = [];
-var tpCallback = null;
-
-function toggle2Player(game) {
-  var toggle = document.getElementById(game+'-2p-toggle');
-  var names = document.getElementById(game+'-player-names');
-  if(toggle.checked) names.classList.add('visible');
-  else names.classList.remove('visible');
-}
-
-function showTransition(game, playerIdx, callback) {
-  var overlay = document.getElementById('turn-transition');
-  var title = document.getElementById('tt-title');
-  var sub = document.getElementById('tt-sub');
-  tpCallback = callback;
-  overlay.className = 'transition-overlay show ' + (playerIdx===0?'p1-turn':'p2-turn');
-  title.textContent = tpNames[playerIdx].toUpperCase() + "'S TURN";
-  sub.textContent = "Hand the device over, then tap to start!";
-}
-
-function dismissTransition() {
-  var overlay = document.getElementById('turn-transition');
-  overlay.classList.remove('show');
-  if(tpCallback) { var cb = tpCallback; tpCallback = null; setTimeout(cb, 350); }
-}
-
-function updatePlayerBanner(game) {
-  var bannerId = game==='flag'?'f-player-banner':'c-player-banner';
-  var nameId = game==='flag'?'f-player-name':'c-player-name';
-  var badgeId = game==='flag'?'f-player-score-badge':'c-player-score-badge';
-  var banner = document.getElementById(bannerId);
-  if(!tpGame){ banner.classList.remove('active','p1','p2'); return; }
-  banner.classList.add('active');
-  banner.classList.remove('p1','p2');
-  banner.classList.add(tpCurrent===0?'p1':'p2');
-  document.getElementById(nameId).textContent = tpNames[tpCurrent];
-  document.getElementById(badgeId).textContent = tpScores[tpCurrent]+' pts';
-}
-
 function showScreen(game, scr) {
   var pfx = game==='flag'?'flag':'city';
   ['start','game','end'].forEach(function(s){
@@ -786,37 +715,13 @@ function getDistractors(correct){
 }
 
 function startFlagGame(){
-  // 2-player setup
-  var is2p = document.getElementById('flag-2p-toggle').checked;
-  if(is2p){
-    tpGame='flag'; tpCurrent=0;
-    tpNames[0]=document.getElementById('flag-p1-name').value.trim()||'Player 1';
-    tpNames[1]=document.getElementById('flag-p2-name').value.trim()||'Player 2';
-    tpScores=[0,0]; tpGameData=[];
-    startFlagRound();
-  } else {
-    tpGame=null;
-    fScore=0; fLives=3; fCurrent=0; fAnswered=false; fStreak=0; fMaxStreak=0; fMissed=[];
-    let pool=fRegion==='all'?countries:countries.filter(c=>c.region===fRegion);
-    const q=Math.min(fTotal,pool.length);
-    fQuestions=shuffle(pool).slice(0,q).map(correct=>({correct,options:shuffle([correct,...getDistractors(correct)])}));
-    fTotal=fQuestions.length;
-    showScreen('flag','game');
-    updateFlagStats(); showFlagQuestion();
-  }
-}
-
-function startFlagRound(){
   fScore=0; fLives=3; fCurrent=0; fAnswered=false; fStreak=0; fMaxStreak=0; fMissed=[];
   let pool=fRegion==='all'?countries:countries.filter(c=>c.region===fRegion);
   const q=Math.min(fTotal,pool.length);
   fQuestions=shuffle(pool).slice(0,q).map(correct=>({correct,options:shuffle([correct,...getDistractors(correct)])}));
   fTotal=fQuestions.length;
-  showTransition('flag', tpCurrent, function(){
-    showScreen('flag','game');
-    updatePlayerBanner('flag');
-    updateFlagStats(); showFlagQuestion();
-  });
+  showScreen('flag','game');
+  updateFlagStats(); showFlagQuestion();
 }
 
 function updateFlagStats(){
@@ -873,12 +778,6 @@ function handleFlagAnswer(chosen, chosenIdx){
 }
 
 function endFlagGame(){
-  if(tpGame==='flag'){
-    tpScores[tpCurrent]+=fScore;
-    tpGameData.push({player:tpNames[tpCurrent], score:fScore, total:fTotal, pct:Math.round((fScore/fTotal)*100)});
-    if(tpCurrent===0){ tpCurrent=1; startFlagRound(); } else { showFlagVsEnd(); }
-    return;
-  }
   showScreen('flag','end');
   const pct=Math.round((fScore/fTotal)*100);
   document.getElementById('f-end-score').textContent=`${fScore}/${fTotal}`;
@@ -897,27 +796,11 @@ function endFlagGame(){
     ms.style.display='block';
     ml.innerHTML=fMissed.map(c=>`<div class="missed-item"><img src="https://flagsapi.com/${c.code.toUpperCase()}/flat/32.png" alt="${c.name}" style="width:40px;height:28px;object-fit:contain;border-radius:4px;" onerror="this.style.display='none'"><span>${c.name}</span><span class="mregion">${c.region}</span></div>`).join('');
   } else ms.style.display='none';
+  // Show leaderboard submit
+  showLbSubmit('flag', fScore, fTotal+' questions');
 }
 
-function showFlagVsEnd(){
-  showScreen('flag','end');
-  const d=tpGameData, s0=d[0].score, s1=d[1].score;
-  let winnerClass, winnerText, winnerSub;
-  if(s0>s1){winnerClass='p1-wins';winnerText=d[0].player+' Wins! 🏆';winnerSub=s0+' vs '+s1+' correct';}
-  else if(s1>s0){winnerClass='p2-wins';winnerText=d[1].player+' Wins! 🏆';winnerSub=s1+' vs '+s0+' correct';}
-  else{winnerClass='draw';winnerText="It's a Draw! 🤝";winnerSub='Both scored '+s0+' correct';}
-  document.getElementById('f-end-icon').textContent='👥';
-  document.getElementById('f-end-title').textContent='2-Player Results';
-  document.getElementById('f-end-score').textContent=d[0].player+': '+s0+' | '+d[1].player+': '+s1;
-  document.getElementById('f-end-sub').textContent='';
-  const ms=document.getElementById('f-missed-section');
-  ms.style.display='block';
-  ms.innerHTML='<div class="vs-winner-banner '+winnerClass+'"><h2>'+winnerText+'</h2><p>'+winnerSub+'</p></div>'+
-    '<div class="vs-result-card"><h3>'+d[0].player+'</h3><p>'+d[0].score+'/'+d[0].total+' correct ('+d[0].pct+'%)</p></div>'+
-    '<div class="vs-result-card"><h3>'+d[1].player+'</h3><p>'+d[1].score+'/'+d[1].total+' correct ('+d[1].pct+'%)</p></div>';
-}
-
-function resetFlagGame(){ tpGame=null; showScreen('flag','start'); }
+function resetFlagGame(){ showScreen('flag','start'); }
 
 
 
@@ -1148,37 +1031,13 @@ function resetZoom() {
 }
 
 function startCityGame() {
-  var is2p = document.getElementById('city-2p-toggle').checked;
-  if(is2p){
-    tpGame='city'; tpCurrent=0;
-    tpNames[0]=document.getElementById('city-p1-name').value.trim()||'Player 1';
-    tpNames[1]=document.getElementById('city-p2-name').value.trim()||'Player 2';
-    tpScores=[0,0]; tpGameData=[];
-    startCityRound();
-  } else {
-    tpGame=null;
-    cScore=0; cCurrent=0; cResults=[];
-    var pool = cRegion==='all' ? cities : cities.filter(function(c){return c.region===cRegion;});
-    cQuestions = shuffle(pool).slice(0, Math.min(cTotal, pool.length));
-    cTotal = cQuestions.length;
-    showScreen('city', 'game');
-    setTimeout(function() { initMap(); loadCityQuestion(); }, 80);
-  }
-}
-
-function startCityRound(){
   cScore=0; cCurrent=0; cResults=[];
   var pool = cRegion==='all' ? cities : cities.filter(function(c){return c.region===cRegion;});
   cQuestions = shuffle(pool).slice(0, Math.min(cTotal, pool.length));
   cTotal = cQuestions.length;
-  showTransition('city', tpCurrent, function(){
-    showScreen('city', 'game');
-    updatePlayerBanner('city');
-    setTimeout(function() { initMap(); loadCityQuestion(); }, 80);
-  });
+  showScreen('city', 'game');
+  setTimeout(function() { initMap(); loadCityQuestion(); }, 80);
 }
-
-
 function loadCityQuestion() {
   confirmed = false;
   pendingPin = null;
@@ -1192,7 +1051,7 @@ function loadCityQuestion() {
   }
   resetZoom();
   document.getElementById('confirm-bar').classList.remove('visible');
-  document.getElementById('c-result-text').textContent = 'Click the map to drop a pin…';
+  document.getElementById('c-result-text').textContent = '';
   document.getElementById('c-result-text').className = 'city-result-text waiting';
   document.getElementById('c-next-btn').classList.remove('visible');
   document.getElementById('c-hint').textContent = 'Zoom & pan, then click to drop your pin';
@@ -1223,48 +1082,12 @@ function endCityGame() {
   document.getElementById('c-end-icon').textContent=icon;
   document.getElementById('c-end-title').textContent=title;
   document.getElementById('c-end-sub').textContent=sub;
-function endCityGame() {
-  if(tpGame==='city'){
-    tpScores[tpCurrent]+=cScore;
-    tpGameData.push({player:tpNames[tpCurrent], score:cScore, total:cTotal*1000, pct:Math.round((cScore/(cTotal*1000))*100)});
-    if(tpCurrent===0){ tpCurrent=1; startCityRound(); } else { showCityVsEnd(); }
-    return;
-  }
-  showScreen('city','end');
-  var maxPts = cTotal*1000, pct = Math.round((cScore/maxPts)*100);
-  document.getElementById('c-total-score').textContent = cScore.toLocaleString();
-  document.getElementById('c-total-label').textContent = 'points out of ' + maxPts.toLocaleString();
-  var icon,title,sub;
-  if(pct>=90){icon='🏆';title='Incredible!';sub='You really know your geography!';}
-  else if(pct>=70){icon='🌟';title='Excellent!';sub='Outstanding geography knowledge!';}
-  else if(pct>=50){icon='👍';title='Good Job!';sub='Pretty solid — keep practising!';}
-  else{icon='🌍';title='Keep Exploring!';sub='Every game makes you better!';}
-  document.getElementById('c-end-icon').textContent=icon;
-  document.getElementById('c-end-title').textContent=title;
-  document.getElementById('c-end-sub').textContent=sub;
   document.getElementById('c-breakdown').innerHTML = cResults.map(function(r){
     var cls=r.dist<50?'great':r.dist<300?'good':r.dist<1000?'ok':'bad';
     return '<div class="city-breakdown-item"><div><div class="cbi-name">'+r.name+'</div><div class="cbi-country">'+r.country+'</div></div><div class="score-ring '+cls+'">'+r.pts+'</div></div>';
   }).join('');
+  // Show leaderboard submit
+  showLbSubmit('city', cScore, cTotal+' cities');
 }
-
-function showCityVsEnd(){
-  showScreen('city','end');
-  var d=tpGameData, s0=d[0].score, s1=d[1].score;
-  var winnerClass, winnerText, winnerSub;
-  if(s0>s1){winnerClass='p1-wins';winnerText=d[0].player+' Wins! 🏆';winnerSub=s0.toLocaleString()+' vs '+s1.toLocaleString()+' pts';}
-  else if(s1>s0){winnerClass='p2-wins';winnerText=d[1].player+' Wins! 🏆';winnerSub=s1.toLocaleString()+' vs '+s0.toLocaleString()+' pts';}
-  else{winnerClass='draw';winnerText="It's a Draw! 🤝";winnerSub='Both scored '+s0.toLocaleString()+' pts';}
-  document.getElementById('c-end-icon').textContent='👥';
-  document.getElementById('c-end-title').textContent='2-Player Results';
-  document.getElementById('c-total-score').textContent=d[0].player+': '+d[0].score.toLocaleString();
-  document.getElementById('c-total-label').textContent=d[1].player+': '+d[1].score.toLocaleString()+' pts';
-  document.getElementById('c-end-sub').textContent='';
-  var bd=document.getElementById('c-breakdown');
-  bd.innerHTML='<div class="vs-winner-banner '+winnerClass+'"><h2>'+winnerText+'</h2><p>'+winnerSub+'</p></div>'+
-    '<div class="vs-result-card"><h3>'+d[0].player+'</h3><p>'+d[0].score.toLocaleString()+' pts ('+d[0].pct+'% of max)</p></div>'+
-    '<div class="vs-result-card"><h3>'+d[1].player+'</h3><p>'+d[1].score.toLocaleString()+' pts ('+d[1].pct+'% of max)</p></div>';
-}
-
-function resetCityGame() { tpGame=null; showScreen('city','start'); }
+function resetCityGame() { showScreen('city','start'); }
 
