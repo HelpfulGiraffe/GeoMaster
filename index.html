@@ -153,42 +153,21 @@ var topojson = (function() {
   .score-ring.good  { border-color:#ca8a04; color:#ca8a04; }
   .score-ring.ok    { border-color:#ea580c; color:#ea580c; }
   .score-ring.bad   { border-color:var(--red); color:var(--red); }
-
-  .two-player-toggle { display:flex; align-items:center; justify-content:space-between; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 16px; margin:12px 0; }
-  .two-player-toggle span { font-weight:700; font-size:0.95rem; }
-  .toggle-slider:before { content:""; position:absolute; width:20px; height:20px; left:3px; bottom:3px; background:white; border-radius:50%; transition:.3s; }
-
-  /* ── Leaderboard ── */
-  .lb-row { display:flex; align-items:center; gap:12px; padding:12px 14px; background:var(--card); border:1px solid var(--border); border-radius:12px; margin-bottom:8px; }
-  .lb-rank { font-family:'Bebas Neue',sans-serif; font-size:1.4rem; width:32px; text-align:center; flex-shrink:0; color:var(--muted); }
-  .lb-rank.gold { color:#f59e0b; }
-  .lb-rank.silver { color:#94a3b8; }
-  .lb-rank.bronze { color:#b45309; }
-  .lb-name { flex:1; font-weight:800; font-size:0.95rem; }
-  .lb-score { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; color:var(--accent); }
-  .lb-meta { font-size:0.75rem; color:var(--muted); }
-  .lb-submit { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-top:12px; }
-  .lb-submit input { width:100%; padding:10px 12px; border-radius:10px; border:1.5px solid var(--border); background:var(--bg); color:var(--text); font-size:0.95rem; font-family:inherit; outline:none; box-sizing:border-box; margin-bottom:10px; }
-  .lb-submit input:focus { border-color:var(--accent); }
-  .lb-empty { text-align:center; padding:40px 20px; color:var(--muted); }
 </style>
 </head>
 <body>
-
-
 
 <nav class="top-nav">
   <div class="nav-brand">🌍 GEO MASTER</div>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="switchTab('flags',this)">🏴 Flags</button>
     <button class="nav-tab" onclick="switchTab('cities',this)">📍 Cities</button>
-    <button class="nav-tab" onclick="switchTab('leaderboard',this)">🏆 Leaderboard</button>
   </div>
 </nav>
 
 <div class="page active" id="page-flags">
   <div class="screen active" id="flag-start">
-    <div class="screen-icon">🏴‍☠️</div>
+    <div class="screen-icon">🏴</div>
     <div class="screen-title">Flag Master</div>
     <p class="screen-sub">Three flags appear — tap the one that matches the country shown.</p>
     <div class="section-label">Questions</div>
@@ -293,7 +272,7 @@ var topojson = (function() {
         <button class="cbtn go" onclick="confirmPin()">✓ Confirm</button>
       </div>
       <div class="city-result-bar">
-        <div class="city-result-text waiting" id="c-result-text"></div>
+        <div class="city-result-text waiting" id="c-result-text">Click the map to drop a pin…</div>
         <button class="next-btn" id="c-next-btn" onclick="nextCityQuestion()">Next →</button>
       </div>
     </div>
@@ -307,22 +286,6 @@ var topojson = (function() {
     <p class="screen-sub" id="c-end-sub"></p>
     <div class="city-breakdown" id="c-breakdown"></div>
     <button class="btn" onclick="resetCityGame()">Play Again</button>
-  </div>
-</div>
-
-
-<div class="page" id="page-leaderboard">
-  <div class="screen active" id="lb-screen">
-    <div class="screen-icon">🏆</div>
-    <div class="screen-title">Leaderboard</div>
-    <div style="display:flex;gap:8px;margin:12px 0;">
-      <button class="pill selected" id="lb-tab-flags" onclick="lbSwitchTab('flags')">🏴‍☠️ Flags</button>
-      <button class="pill" id="lb-tab-cities" onclick="lbSwitchTab('cities')">📍 Cities</button>
-    </div>
-    <div id="lb-list" style="width:100%;max-width:480px;margin:0 auto;">
-      <div style="text-align:center;color:var(--muted);padding:40px 0;">Loading scores...</div>
-    </div>
-    <p style="font-size:0.75rem;color:var(--muted);text-align:center;margin-top:16px;">Scores are shared publicly with all players</p>
   </div>
 </div>
 
@@ -796,8 +759,6 @@ function endFlagGame(){
     ms.style.display='block';
     ml.innerHTML=fMissed.map(c=>`<div class="missed-item"><img src="https://flagsapi.com/${c.code.toUpperCase()}/flat/32.png" alt="${c.name}" style="width:40px;height:28px;object-fit:contain;border-radius:4px;" onerror="this.style.display='none'"><span>${c.name}</span><span class="mregion">${c.region}</span></div>`).join('');
   } else ms.style.display='none';
-  // Show leaderboard submit
-  showLbSubmit('flag', fScore, fTotal+' questions');
 }
 
 function resetFlagGame(){ showScreen('flag','start'); }
@@ -1038,6 +999,7 @@ function startCityGame() {
   showScreen('city', 'game');
   setTimeout(function() { initMap(); loadCityQuestion(); }, 80);
 }
+
 function loadCityQuestion() {
   confirmed = false;
   pendingPin = null;
@@ -1051,7 +1013,7 @@ function loadCityQuestion() {
   }
   resetZoom();
   document.getElementById('confirm-bar').classList.remove('visible');
-  document.getElementById('c-result-text').textContent = '';
+  document.getElementById('c-result-text').textContent = 'Click the map to drop a pin…';
   document.getElementById('c-result-text').className = 'city-result-text waiting';
   document.getElementById('c-next-btn').classList.remove('visible');
   document.getElementById('c-hint').textContent = 'Zoom & pan, then click to drop your pin';
@@ -1086,8 +1048,10 @@ function endCityGame() {
     var cls=r.dist<50?'great':r.dist<300?'good':r.dist<1000?'ok':'bad';
     return '<div class="city-breakdown-item"><div><div class="cbi-name">'+r.name+'</div><div class="cbi-country">'+r.country+'</div></div><div class="score-ring '+cls+'">'+r.pts+'</div></div>';
   }).join('');
-  // Show leaderboard submit
-  showLbSubmit('city', cScore, cTotal+' cities');
 }
+
 function resetCityGame() { showScreen('city','start'); }
 
+</script>
+</body>
+</html>
